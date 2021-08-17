@@ -1,82 +1,91 @@
 
-### 操作步驟：<br>
+# 操作步驟：<br>
 
 1.下載程式碼
 ~~~
-git clone https://github.com/maso0310/linebot_heroku_mongodb.git
+git clone https://github.com/maso0310/linebot_heroku_wakeup.git
 ~~~
-<br><br>
-2.修改程式當中的三個地方：LINEBOT Channel Access Token、Channel Secret以及MongoDB的資料庫連結網址，如下圖<br>
+2.依照[此篇影片](https://youtu.be/cHKr211oTlQ)內容步驟中進行程式碼中LINEBOT、MongoDB設定<br><br>
 
-
-![要改的地方](https://i.imgur.com/7auNd6C.png)
-<br><br>
-3.[進入 MongoDB官網 並註冊帳號](https://www.mongodb.com/)<br>
-
-4.在MongoDB官網註冊帳號之後，依照官網指示的五個步驟逐漸建立資料庫<br>
-5.在建立資料庫之後，點選Connect，選擇Python環境，獲取MongoDB串聯網址，如下圖：<br>
-
-
-![mongodb網址的位置](https://i.imgur.com/HLCk99r.png)<br>
-<br><br>
-6.[進入LINE Developer官網建立LINE BOT帳號](https://developers.line.biz/)<br>
-7.進入LINE Developer官網，將LINE@帳號的Channel Access Token、Channel Secret置換成自己的，位置如下圖<br>
-<br>
-
-![LINE的Access Token跟Secret](https://i.imgur.com/6QmQNpe.png)
+3.將自己的herokuapp網址複製至下圖紅框中，完成指定的herokuapp喚醒設定<br>
+![喚醒heroku的網址設定](https://i.imgur.com/OcVdGnz.jpg)
 <br><br>
 
-## 簡易的聊天機器人資料庫 Heroku / MongoDB / LINE BOT
-
-### MongoDB的資料庫架構步驟<br>
-1.讀取資料庫(Database)<br>
-2.讀取集合(Collection)<br>
-3.文檔(Document)的CRUD(建立、閱讀、修改、刪除)<br>
-#### **↑上面三者的關係為：**<br>
-
-1.MongoDB資料庫，皆以**JSON格式**，寫入與讀取資料<br>
-2.MongoClient的資料庫(Database)裡面，可以擁有多個集合(Collection)，相當於關聯式資料庫裡面的資料表(Table)<br>
-3.每個集合當中，存在取多筆資料，每一筆資料被稱作為一個文檔(Document)<br>
-4.首先要先建立一個資料庫與集合，才能把資料寫入其中<br>
+4.若要維持每天24小時運作，則需要進入heroku官網進行信用卡資料設定(從每月550小時額度新增為1000小時)，同一個帳號之下的APP使用的運作時間共同計算，可由信用卡設定下方觀看每月額度與已使用累積時間。
+![heroku信用卡設定的位置](https://i.imgur.com/gMWiDL3.jpg)<br>
 <br><br>
 
-### mongodb_function.py中的變數與函數<br><br>
-**client**: 一個透過pymongo建立的MongoDB連線<br>
-**db**: 讀取clinet當中，名為MongoClient的Database<br>
-**col**: 讀取db當中，名為Database的Collection<br>
-**dicMemberCheck()**: 判斷key是否在指定的dictionary當中，若有則return True<br>
-**write_one_data()**: 寫入資料data是dictionary<br>
-**write_many_datas()**: 寫入多筆資料，data是一個由dictionary組成的list<br>
-**read_many_datas()**: 讀取所有LINE的webhook event紀錄資料<br>
-**read_chat_records()**: 讀取LINE的對話紀錄資料<br>
-**delete_all_data()**: 刪除所有資料<br>
-**col_find()**: 找到最新的一筆資料<br>
-<br><br>
+5.部署至herokuapp之後，可由自己的heroku根路徑('/')網址進入以下網頁<br>
+![簡易說明頁面](https://i.imgur.com/Kyauumv.png)<br>
 
-### 儲存所有webhook event到MongoDB資料庫
-1.範例當中已經將LINE webhook event所傳送的JSON資料直接儲存於MongoDB資料庫<br>
-2.寫入指令與資料範例如下所示<br>
-![寫入的資料庫的指令](https://i.imgur.com/E8bN7bO.jpg)
-<br><br>
+6.在herokuapp的more當中，可由viewlog看到每28分鐘進行一次喚醒的動作，代表完成設定<br>
+![喚醒成功的log](https://i.imgur.com/NRneRZW.jpg)<br><br>
 
-### 寫入的webhook event範例
+## 簡易的聊天機器人資料庫 Heroku / MongoDB / LINE BOT / HTML網頁<br><br>
+
+### 讓herokuapp持續運作不休眠 / flask的route設定與templates網頁模板<br><br>
+1.在app.py當中設定要放置html模板的路徑位置，template_folder='templates'
 ~~~
-{'_id': ObjectId('611293ef5d5e8a3922ce442c'), 'destination': 'U454e24915d621f68d70b9a509e195d93', 'events': [{'type': 'message', 'message': {'type': 'text', 'id': '14549285734851', 'text': '@讀取'}, 'timestamp': 1628607470353, 'source': {'type': 'user', 'userId': 'U64fcb80364ac73bb9a86f41826e9399a'}, 'replyToken': '9854eb2cc31b43179f27c2a8ca4519ee', 'mode': 'active'}]}
+app = Flask(__name__,template_folder='templates')
 ~~~
-<br><br>
-### 內建指令
-**@讀取**: 將目前以放入MongoDB資料庫的資料以字串型式回傳到LINE對話框<br>
-**@查詢**: 查詢一筆最新的資料，並以字串型式回傳到LINE對話框<br>
-**@對話紀錄**: 查詢透過webhook event傳送到LINEBOT的文字訊息紀錄，整理後回傳至對話框<br>
-**@刪除**: 將目前所儲存的資料刪除，並回傳刪除的資料筆數於對話框<br>
+2.新增兩個route，一個在根路徑("/")下，作為首頁範例，另一個則是在("/heroku_wake_up")
+~~~
+@app.route("/")
+def index():
+    return render_template("./index.html")
 
+@app.route("/heroku_wake_up")
+def yanwei():
+    return "Hey!Wake Up!!"
+~~~
+3.建立templates資料夾，並新增第一個範例首頁index.html
+~~~
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Maso的萬事屋LINEBOT範例</title>
+</head>
+
+<body>
+    <h1>Maso的萬事屋LINEBOT範例，使用到以下套件</h1>
+    <ul>
+        <li>Flask: 一個使用Python編寫的輕量級Web應用框架。</li>
+        <li>line-bot-sdk: 一個基於Python的SDK，可用於呼叫LINE BOT API。</li>
+        <li>Pymongo: 串連No SQL資料庫型態的MongoDB所使用的python套件。</li>
+        <li>Requests: 用於透過pyhon發出request的套件。</li>
+        <li>BeautifulSoup4: 用於解析HTML文檔的套件。</li>
+    </ul>
+</body>
+
+</html>
+~~~
+4.建立每28分鐘喚醒herokuapp的request函數，並以子執行緒方式啟動，使該任務在不影響主程式情況下持續運作
+~~~
+#======讓heroku不會睡著======
+import threading 
+import requests
+def wake_up_heroku():
+    while 1==1:
+        url = '你的herokuapp網址' + 'heroku_wake_up'
+        res = requests.get(url)
+        if res.status_code==200:
+            print('喚醒heroku成功')
+        else:
+            print('喚醒失敗')
+        time.sleep(28*60)
+
+threading.Thread(target=wake_up_heroku).start()
+#======讓heroku不會睡著======
+~~~
+5.完成以Flask網頁框架製作的LINEBOT、HTML網頁模板、MongoDB資料庫與持續運作的herokuapp範例專案部署
 <br><br>
+
 ====================================<br>
 如果喜歡這個教學內容<br>
 歡迎訂閱Youtube頻道<br>
 [Maso的萬事屋](https://www.youtube.com/playlist?list=PLG4d6NSc7_l5-GjYiCdYa7H5Wsz0oQA7U)<br>
 或加LINE私下交流 LINE ID: mastermaso<br>
 ![LOGO](https://yt3.ggpht.com/ytc/AKedOLR7I7tw_IxwJRgso1sT4paNu2s6_4hMw2goyDdrYQ=s88-c-k-c0x00ffffff-no-rj)<br>
-
-
 ====================================<br>
