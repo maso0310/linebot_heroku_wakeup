@@ -1,0 +1,6 @@
+line-bot-sdk
+flask
+pymongo
+dnspython==1.16.0
+requests
+BeautifulSoup4
