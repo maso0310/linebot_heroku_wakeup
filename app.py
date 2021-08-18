@@ -18,6 +18,7 @@ from Function import *
 
 #======python的函數庫==========
 import  os
+import time
 #======python的函數庫==========
 
 #======讓heroku不會睡著======
