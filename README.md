@@ -35,7 +35,7 @@ def index():
     return render_template("./index.html")
 
 @app.route("/heroku_wake_up")
-def yanwei():
+def heroku_wake_up():
     return "Hey!Wake Up!!"
 ~~~
 3.建立templates資料夾，並新增第一個範例首頁index.html
